@@ -166,6 +166,21 @@ Acceptance test:
 - No TypeScript, lint, or Vercel build errors.`;
 }
 
+type ZuBrain = "Zu" | "Codex" | "ChatGPT" | "Gemini";
+
+function brainReply(brain: ZuBrain, prompt: string) {
+  const intro = {
+    Zu: "Zu",
+    Codex: "Codex Brain",
+    ChatGPT: "ChatGPT Brain",
+    Gemini: "Gemini Brain",
+  }[brain];
+  if (brain === "Codex") return `${intro}: I am thinking like an engineer. Turn this into a scoped ticket, identify files, implement, run lint/build, then commit and push after checks pass.\n\n${buildCodexPrompt(prompt)}`;
+  if (brain === "Gemini") return `${intro}: I am thinking wide-angle. Check the user journey, edge cases, mobile layout, data persistence, and whether this feature actually helps your daily workflow. Then hand Codex a tight implementation plan.`;
+  if (brain === "ChatGPT") return `${intro}: I am thinking strategy and copy. The move is to clarify the outcome, write the user-facing text, create a simple plan, and keep the feature beginner-friendly.`;
+  return generateZuReply(prompt);
+}
+
 export default function BossDashboardApp({ view }: { view: View }) {
   const [businesses, setBusinesses] = useBusinesses();
   const [tasks, setTasks] = useTasks();
@@ -266,7 +281,7 @@ export default function BossDashboardApp({ view }: { view: View }) {
             {view === "money" && <MoneyPage entries={moneyEntries} setEntries={setMoneyEntries} businesses={businesses} income={income} expenses={expenses} bestBusiness={bestBusiness} goal={settings.moneyGoal} chartData={chartData} />}
             {view === "products" && <ProductsPage products={products} setProducts={setProducts} businesses={businesses} />}
             {view === "learning" && <LearningPage learning={learning} />}
-            {view === "zu" && <ZuPage />}
+            {view === "zu" && <ZuPage businesses={businesses} setBusinesses={setBusinesses} tasks={tasks} setTasks={setTasks} content={content} setContent={setContent} products={products} setProducts={setProducts} moneyEntries={moneyEntries} setMoneyEntries={setMoneyEntries} />}
             {view === "settings" && <SettingsPage settings={settings} setSettings={setSettings} reset={() => { setBusinesses(starterBusinesses); setTasks(starterTasks); setContent(starterContent); setMoneyEntries(starterMoney); setProducts(starterProducts); setSettings(starterSettings); }} exportData={() => navigator.clipboard?.writeText(JSON.stringify({ businesses, tasks, content, moneyEntries, products, settings }, null, 2))} />}
           </motion.div>
         </div>
@@ -649,15 +664,60 @@ function LearningPage({ learning }: { learning: ReturnType<typeof useLearning>[0
   );
 }
 
-function ZuPage() {
+function ZuPage({ businesses, setBusinesses, tasks, setTasks, content, setContent, products, setProducts, moneyEntries, setMoneyEntries }: { businesses: Business[]; setBusinesses: (value: Business[]) => void; tasks: Task[]; setTasks: (value: Task[]) => void; content: ContentIdea[]; setContent: (value: ContentIdea[]) => void; products: Product[]; setProducts: (value: Product[]) => void; moneyEntries: MoneyEntry[]; setMoneyEntries: (value: MoneyEntry[]) => void }) {
   const [messages, setMessages] = useState(["Zu: Co-Owner Mode is on. I am your business bestie, coding planner, focus coach, and ship-it strategist. I can draft Codex prompts, feature specs, commit plans, content, and money moves. I do not secretly touch your repo from the browser, but I will tell Codex exactly how to move."]);
   const [prompt, setPrompt] = useState("");
+  const [brain, setBrain] = useState<ZuBrain>("Zu");
   const [codexGoal, setCodexGoal] = useState("Add a new feature to help me make progress faster.");
   const [codexPrompt, setCodexPrompt] = useState(buildCodexPrompt("Add a new feature to help me make progress faster."));
   const prompts = ["Plan my day", "Give me 5 content ideas", "Make me a caption", "What should I focus on today?", "Give me a low energy plan", "Give me a high hustle plan", "Help me make money today", "Write a Codex prompt", "Help me commit and push"];
   function ask(value: string) {
     if (!value.trim()) return;
-    setMessages([...messages, `You: ${value}`, generateZuReply(value)]);
+    setMessages([...messages, `You: ${value}`, brainReply(brain, value)]);
+    setPrompt("");
+  }
+  function addAssistantTask(kind: Task["type"], title: string, notes: string) {
+    setTasks([{ id: makeId("task"), title, business: businesses[0]?.name ?? "Boss HQ", type: kind, priority: "High", status: "Not Started", dueDate: new Date().toISOString().slice(0, 10), notes }, ...tasks]);
+    setMessages((current) => [...current, `Zu: Added task: ${title}`]);
+  }
+  function addBugTicket() {
+    const title = prompt.trim() || "Bug: describe what is broken";
+    const brief = buildCodexPrompt(`Fix this bug in Boss Life + Business HQ: ${title}`);
+    setTasks([{ id: makeId("task"), title, business: "Boss HQ", type: "Build", priority: "High", status: "Not Started", dueDate: new Date().toISOString().slice(0, 10), notes: brief }, ...tasks]);
+    setCodexGoal(`Fix this bug in Boss Life + Business HQ: ${title}`);
+    setCodexPrompt(brief);
+    setMessages((current) => [...current, `Zu: Bug ticket created and Codex prompt drafted. We are not panicking. We are shipping the fix.`]);
+    setPrompt("");
+  }
+  function addUpgradeTicket() {
+    const title = prompt.trim() || "Upgrade: describe the feature";
+    const brief = buildCodexPrompt(`Build this upgrade in Boss Life + Business HQ: ${title}`);
+    setTasks([{ id: makeId("task"), title, business: "Boss HQ", type: "Build", priority: "High", status: "Not Started", dueDate: new Date().toISOString().slice(0, 10), notes: brief }, ...tasks]);
+    setCodexGoal(`Build this upgrade in Boss Life + Business HQ: ${title}`);
+    setCodexPrompt(brief);
+    setMessages((current) => [...current, `Zu: Upgrade ticket created. Codex has a clean build brief now.`]);
+    setPrompt("");
+  }
+  function addAssistantContent() {
+    setContent([{ id: makeId("content"), title: prompt.trim() || "AI assistant content idea", platform: "TikTok", business: businesses[0]?.name ?? "Boss HQ", status: "Idea", hook: pick(aiHooks), caption: pick(aiCaptions), hashtags: "#bosslife #buildinpublic #smallbusiness", postDate: new Date().toISOString().slice(0, 10), notes: "Created by Zu from the assistant page." }, ...content]);
+    setMessages((current) => [...current, "Zu: Added a content idea. Now post it before your brain starts negotiating."]);
+    setPrompt("");
+  }
+  function addAssistantProduct() {
+    setProducts([{ id: makeId("product"), productName: prompt.trim() || pick(aiProductIdeas), business: businesses[0]?.name ?? "Boss HQ", cost: 5, sellingPrice: 25, platform: "Research", status: "Research", supplier: "Zu suggested", notes: "Validate with one post before spending money." }, ...products]);
+    setMessages((current) => [...current, "Zu: Added a product idea. Validate first, spend second. CEO behavior."]);
+    setPrompt("");
+  }
+  function addAssistantMoney() {
+    setMoneyEntries([{ id: makeId("money"), date: new Date().toISOString().slice(0, 10), business: businesses[0]?.name ?? "Boss HQ", amount: 0, type: "Income", category: "Assistant entry", notes: prompt.trim() || "Created by Zu. Update amount when money lands." }, ...moneyEntries]);
+    setMessages((current) => [...current, "Zu: Added a money tracker entry. Update the amount when the cash hits."]);
+    setPrompt("");
+  }
+  function markProjectFocus() {
+    const first = businesses[0];
+    if (!first) return;
+    setBusinesses(businesses.map((business) => business.id === first.id ? { ...business, currentFocus: prompt.trim() || "Assistant-selected focus", lastUpdated: new Date().toISOString().slice(0, 10) } : business));
+    setMessages((current) => [...current, `Zu: Updated project focus for ${first.name}.`]);
     setPrompt("");
   }
   function generatePrompt() {
@@ -689,7 +749,21 @@ function ZuPage() {
         </div>
 
         <div className="mt-5 max-h-[420px] space-y-3 overflow-auto rounded-2xl bg-white/10 p-4">{messages.map((message, index) => <p key={`${message}-${index}`} className="whitespace-pre-line rounded-xl bg-white/10 p-3 text-sm">{message}</p>)}</div>
-        <div className="mt-4 grid gap-2 md:grid-cols-[1fr_auto]"><Input className="bg-white text-black" value={prompt} onChange={(event) => setPrompt(event.target.value)} placeholder="Ask Zu for code help, a Codex prompt, money plan, mindset reset, or content..." /><Button onClick={() => ask(prompt)} className="bg-amber-300 text-black"><Sparkles /> Ask Zu</Button></div>
+        <div className="mt-4 grid gap-2 md:grid-cols-[180px_1fr_auto]">
+          <Select value={brain} onChange={(value) => setBrain(value as ZuBrain)} options={["Zu", "Codex", "ChatGPT", "Gemini"]} />
+          <Input className="bg-white text-black" value={prompt} onChange={(event) => setPrompt(event.target.value)} placeholder="Ask Zu to add a task, log money, make a bug ticket, draft code plan, or hype you up..." />
+          <Button onClick={() => ask(prompt)} className="bg-amber-300 text-black"><Sparkles /> Ask</Button>
+        </div>
+        <div className="mt-3 grid gap-2 md:grid-cols-4">
+          <Button onClick={() => addAssistantTask("Admin", prompt.trim() || "Assistant-added task", "Created by Zu from the assistant page.")} className="bg-white text-black"><Plus /> Add task</Button>
+          <Button onClick={addAssistantContent} className="bg-pink-500 text-white"><Camera /> Add content</Button>
+          <Button onClick={addAssistantProduct} className="bg-white text-black"><Package /> Add product</Button>
+          <Button onClick={addAssistantMoney} className="bg-amber-300 text-black"><CircleDollarSign /> Log money</Button>
+          <Button onClick={addBugTicket} className="bg-red-600 text-white">Bug ticket</Button>
+          <Button onClick={addUpgradeTicket} className="bg-fuchsia-600 text-white">Upgrade ticket</Button>
+          <Button onClick={markProjectFocus} className="bg-white text-black">Set project focus</Button>
+          <Button onClick={() => addAssistantTask("Build", "Run app checks", "Ask Codex to run npm run lint and npm run build, fix any errors, then commit and push after approval.")} className="bg-white text-black">Run checks task</Button>
+        </div>
         <div className="mt-4 flex flex-wrap gap-2">{prompts.map((item) => <Button key={item} onClick={() => ask(item)} className="bg-pink-500 text-white">{item}</Button>)}</div>
       </Card>
 
@@ -707,6 +781,10 @@ function ZuPage() {
 
         <Card className="rounded-2xl bg-white/85 p-5 shadow-xl">
           <h3 className="text-2xl font-black">Ship Checklist</h3>
+          <div className="mt-3 rounded-2xl bg-pink-50 p-4 text-sm text-zinc-700">
+            <p className="font-black text-zinc-950">What Zu can control inside the app</p>
+            <p className="mt-1">Zu can add tasks, content ideas, product ideas, money entries, bug tickets, upgrade tickets, and project focus notes to LocalStorage. For real source-code changes, she creates a Codex-ready brief so Codex can safely edit, test, commit, and push with approvals.</p>
+          </div>
           <div className="mt-4 space-y-3">
             {[
               "Clarify the feature in one sentence.",

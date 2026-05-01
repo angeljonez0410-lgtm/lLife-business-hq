@@ -91,6 +91,15 @@ function businessField(field: string | undefined, fallback: string) {
   return field?.trim() ? field : fallback;
 }
 
+function listField(items: string[] | undefined, fallback: string[]) {
+  return items?.length ? items : fallback;
+}
+
+function searchLink(engine: "google" | "youtube", query: string) {
+  const encoded = encodeURIComponent(query);
+  return engine === "google" ? `https://www.google.com/search?q=${encoded}` : `https://www.youtube.com/results?search_query=${encoded}`;
+}
+
 const aiHooks = [
   "Stop scrolling if you are building your business with no team.",
   "Nobody tells beginners this part before they start selling.",
@@ -540,7 +549,84 @@ function ProductsPage({ products, setProducts, businesses }: { products: Product
 }
 
 function LearningPage({ learning }: { learning: ReturnType<typeof useLearning>[0] }) {
-  return <div className="grid gap-4 lg:grid-cols-2">{learning.map((path) => <Card key={path.business} className="rounded-2xl bg-white/75 p-5 shadow-lg"><h3 className="text-xl font-black">{path.business}</h3><p className="mt-2 font-bold text-pink-700">What to learn first</p><ul className="mt-2 space-y-1 text-sm">{path.whatToLearnFirst.map((item) => <li key={item}>- {item}</li>)}</ul><p className="mt-4 rounded-xl bg-black p-3 text-sm font-bold text-white">Do this first: {path.doThisFirst}</p><div className="mt-4 grid gap-3 md:grid-cols-2"><InfoList title="Beginner Checklist" items={path.beginnerChecklist} /><InfoList title="Common Mistakes" items={path.commonMistakes} /><InfoList title="Build Step-by-Step" items={path.buildStepByStep} /><InfoList title="Next Level Steps" items={path.nextLevelSteps} /></div></Card>)}</div>;
+  const fallbackMaterials = ["Notebook", "Phone camera", "Canva", "Simple tracker", "One focused hour"];
+  const fallbackTools = ["Google", "YouTube", "Canva", "Boss HQ tracker"];
+  return (
+    <div className="space-y-5">
+      <Card className="rounded-2xl bg-black p-6 text-white shadow-2xl">
+        <Badge className="mb-3 bg-pink-500 text-white">Learning Mode Super Page</Badge>
+        <h2 className="text-3xl font-black">Learn, Search, Watch, Build</h2>
+        <p className="mt-2 max-w-3xl text-sm text-white/70">Each project now has what to learn first, materials needed, tools, Google research links, YouTube video searches, post ideas, and video ideas. No blank studying. Learn one thing and apply it.</p>
+        <div className="mt-5 grid gap-3 md:grid-cols-4">
+          <div className="rounded-xl bg-white/10 p-3"><p className="text-2xl font-black">{learning.length}</p><p className="text-xs text-white/70">learning paths</p></div>
+          <div className="rounded-xl bg-white/10 p-3"><p className="text-2xl font-black">3+</p><p className="text-xs text-white/70">searches each</p></div>
+          <div className="rounded-xl bg-white/10 p-3"><p className="text-2xl font-black">Tools</p><p className="text-xs text-white/70">materials included</p></div>
+          <div className="rounded-xl bg-white/10 p-3"><p className="text-2xl font-black">Posts</p><p className="text-xs text-white/70">content ideas included</p></div>
+        </div>
+      </Card>
+
+      <div className="grid gap-4 xl:grid-cols-2">
+        {learning.map((path) => {
+          const materials = listField(path.materials, fallbackMaterials);
+          const tools = listField(path.tools, fallbackTools);
+          const googleSearches = listField(path.googleSearches, [`${path.business} beginner guide`, `${path.business} checklist`, `${path.business} how to start`]);
+          const youtubeSearches = listField(path.youtubeSearches, [`${path.business} beginner tutorial`, `${path.business} step by step`, `${path.business} mistakes`]);
+          const postIdeas = listField(path.postIdeas, [`What I learned about ${path.business}`, `${path.business} beginner checklist`, `My next step for ${path.business}`]);
+          const videoIdeas = listField(path.videoIdeas, [`Learn ${path.business} with me`, `${path.business} setup process`, `${path.business} beginner mistake`]);
+          return (
+            <Card key={path.business} className="rounded-2xl bg-white/80 p-5 shadow-xl">
+              <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+                <div>
+                  <h3 className="text-2xl font-black">{path.business}</h3>
+                  <p className="mt-1 text-sm text-zinc-600">Start here: {path.doThisFirst}</p>
+                </div>
+                <Badge className="w-fit bg-black text-white">Beginner-friendly</Badge>
+              </div>
+
+              <div className="mt-4 rounded-2xl bg-gradient-to-br from-pink-100 to-amber-100 p-4">
+                <p className="text-sm font-black text-pink-700">Do This First</p>
+                <p className="mt-1 text-lg font-black">{path.doThisFirst}</p>
+              </div>
+
+              <div className="mt-4 grid gap-3 md:grid-cols-2">
+                <InfoList title="What To Learn First" items={path.whatToLearnFirst} />
+                <InfoList title="Materials Needed" items={materials} />
+                <InfoList title="Tools To Use" items={tools} />
+                <InfoList title="Beginner Checklist" items={path.beginnerChecklist} />
+              </div>
+
+              <div className="mt-4 grid gap-3 md:grid-cols-2">
+                <div className="rounded-xl border border-amber-200 bg-white/70 p-3">
+                  <p className="font-black">Scan Google</p>
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    {googleSearches.map((query) => <a key={query} href={searchLink("google", query)} target="_blank" rel="noreferrer" className="rounded-lg bg-black px-3 py-2 text-xs font-bold text-white">Google: {query}</a>)}
+                  </div>
+                </div>
+                <div className="rounded-xl border border-pink-200 bg-white/70 p-3">
+                  <p className="font-black">Watch Videos</p>
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    {youtubeSearches.map((query) => <a key={query} href={searchLink("youtube", query)} target="_blank" rel="noreferrer" className="rounded-lg bg-pink-500 px-3 py-2 text-xs font-bold text-white">YouTube: {query}</a>)}
+                  </div>
+                </div>
+              </div>
+
+              <div className="mt-4 grid gap-3 md:grid-cols-2">
+                <InfoList title="Post Ideas After Learning" items={postIdeas} />
+                <InfoList title="Video Ideas To Film" items={videoIdeas} />
+                <InfoList title="Common Mistakes" items={path.commonMistakes} />
+                <InfoList title="Next Level Steps" items={path.nextLevelSteps} />
+              </div>
+
+              <div className="mt-4 rounded-xl bg-black p-4 text-white">
+                <p className="font-black">Tonight&apos;s tiny action</p>
+                <p className="mt-1 text-sm text-white/75">Open one Google link, watch one video, write one note, then do the first step for 20 minutes.</p>
+              </div>
+            </Card>
+          );
+        })}
+      </div>
+    </div>
+  );
 }
 
 function ZuPage() {

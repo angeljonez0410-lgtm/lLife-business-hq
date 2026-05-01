@@ -73,6 +73,12 @@ export type LearningPath = {
   buildStepByStep: string[];
   commonMistakes: string[];
   nextLevelSteps: string[];
+  materials: string[];
+  tools: string[];
+  googleSearches: string[];
+  youtubeSearches: string[];
+  postIdeas: string[];
+  videoIdeas: string[];
 };
 
 export type Settings = {

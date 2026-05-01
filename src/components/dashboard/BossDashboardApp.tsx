@@ -138,12 +138,32 @@ function generateContentPack(item: ContentIdea, kind: string) {
 
 function generateZuReply(prompt: string) {
   const lower = prompt.toLowerCase();
+  if (lower.includes("code") || lower.includes("codex") || lower.includes("commit") || lower.includes("push") || lower.includes("build")) return "Zu: Co-Owner Mode activated. Give Codex the exact feature, files touched if you know them, and the acceptance test. The move is: 1) inspect the code, 2) make the smallest working change, 3) run lint/build, 4) commit with a clear message, 5) push only after it passes. I can draft the Codex prompt and ship checklist for you.";
   if (lower.includes("money")) return "Zu: Pick one fast-cash lane: post an offer, list one product, follow up with 3 people, and record the income. No overthinking.";
   if (lower.includes("content") || lower.includes("caption")) return `Zu: Here are 5 ideas: ${aiProductIdeas.slice(0, 5).map((idea) => `\n- ${idea}: show the problem, the process, and the result`).join("")}`;
   if (lower.includes("low energy")) return "Zu: Low energy plan: one money move, one content draft, one learning video, one 10-minute cleanup. Then you are allowed to rest.";
   if (lower.includes("high hustle")) return "Zu: High hustle plan: batch 5 hooks, list 3 products, finish 3 tasks, improve one page, and update the money tracker.";
   if (lower.includes("focus")) return "Zu: Focus on the task closest to money first, then content, then learning. Today does not need 20 wins. It needs the right 3.";
   return "Zu: Start with one clear outcome, one content move, one money move, and one tiny learning step. Keep it simple enough to finish today.";
+}
+
+function buildCodexPrompt(goal: string) {
+  const request = goal.trim() || "Upgrade Boss Life + Business HQ with the next highest-impact feature.";
+  return `You are Codex working in the Boss Life + Business HQ Next.js app. Goal: ${request}
+
+Rules:
+- Read AGENTS.md and the current code before editing.
+- Keep the app Vercel-ready and localStorage-first.
+- Use Next.js App Router, TypeScript, Tailwind, shadcn/ui, Lucide, Framer Motion, Recharts patterns already in the repo.
+- Make the UI polished, mobile-friendly, luxury CEO, girly grown, black/pink/cream/gold.
+- Implement the feature fully, not as a blank placeholder.
+- Run npm run lint and npm run build.
+- Commit with a clear message and push to main only after checks pass.
+
+Acceptance test:
+- The feature is visible in the app.
+- User data stays editable/persistent.
+- No TypeScript, lint, or Vercel build errors.`;
 }
 
 export default function BossDashboardApp({ view }: { view: View }) {
@@ -630,15 +650,83 @@ function LearningPage({ learning }: { learning: ReturnType<typeof useLearning>[0
 }
 
 function ZuPage() {
-  const [messages, setMessages] = useState(["Zu: Demo AI Mode is on. Tell me what you need and I will give you a simple boss plan."]);
+  const [messages, setMessages] = useState(["Zu: Co-Owner Mode is on. I am your business bestie, coding planner, focus coach, and ship-it strategist. I can draft Codex prompts, feature specs, commit plans, content, and money moves. I do not secretly touch your repo from the browser, but I will tell Codex exactly how to move."]);
   const [prompt, setPrompt] = useState("");
-  const prompts = ["Plan my day", "Give me 5 content ideas", "Make me a caption", "What should I focus on today?", "Give me a low energy plan", "Give me a high hustle plan", "Help me make money today"];
+  const [codexGoal, setCodexGoal] = useState("Add a new feature to help me make progress faster.");
+  const [codexPrompt, setCodexPrompt] = useState(buildCodexPrompt("Add a new feature to help me make progress faster."));
+  const prompts = ["Plan my day", "Give me 5 content ideas", "Make me a caption", "What should I focus on today?", "Give me a low energy plan", "Give me a high hustle plan", "Help me make money today", "Write a Codex prompt", "Help me commit and push"];
   function ask(value: string) {
     if (!value.trim()) return;
     setMessages([...messages, `You: ${value}`, generateZuReply(value)]);
     setPrompt("");
   }
-  return <Card className="rounded-2xl bg-black p-5 text-white shadow-2xl"><div className="flex items-center gap-3"><Bot className="size-8 text-pink-300" /><div><h3 className="text-2xl font-black">Zu AI Assistant</h3><p className="text-sm text-white/65">Demo AI Mode - local generated strategy, no API key needed</p></div></div><div className="mt-5 max-h-[440px] space-y-3 overflow-auto rounded-2xl bg-white/10 p-4">{messages.map((message, index) => <p key={`${message}-${index}`} className="whitespace-pre-line rounded-xl bg-white/10 p-3 text-sm">{message}</p>)}</div><div className="mt-4 grid gap-2 md:grid-cols-[1fr_auto]"><Input className="bg-white text-black" value={prompt} onChange={(event) => setPrompt(event.target.value)} placeholder="Ask Zu for a caption, money plan, product idea, or low energy plan..." /><Button onClick={() => ask(prompt)} className="bg-amber-300 text-black"><Sparkles /> Ask Zu</Button></div><div className="mt-4 flex flex-wrap gap-2">{prompts.map((item) => <Button key={item} onClick={() => ask(item)} className="bg-pink-500 text-white">{item}</Button>)}</div></Card>;
+  function generatePrompt() {
+    setCodexPrompt(buildCodexPrompt(codexGoal));
+  }
+  return (
+    <div className="space-y-5">
+      <Card className="rounded-2xl bg-black p-5 text-white shadow-2xl">
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+          <div className="flex items-center gap-3">
+            <Bot className="size-9 text-pink-300" />
+            <div>
+              <Badge className="mb-2 bg-pink-500 text-white">Zu Co-Owner Mode</Badge>
+              <h3 className="text-3xl font-black">Super AI Co-Assistant</h3>
+              <p className="text-sm text-white/65">Motivational, direct, fun, and built to help you ship with Codex + ChatGPT.</p>
+            </div>
+          </div>
+          <div className="rounded-2xl bg-white/10 p-4 text-sm text-white/80">
+            <p className="font-black text-white">Access boundary</p>
+            <p>Zu can generate plans, code prompts, checklists, and commit instructions. Codex still asks approval before sensitive actions like pushing code. That keeps your empire protected.</p>
+          </div>
+        </div>
+
+        <div className="mt-5 grid gap-3 md:grid-cols-4">
+          <div className="rounded-xl bg-white/10 p-3"><p className="font-black">Mindset</p><p className="text-xs text-white/65">Get focused, stop spiraling, move.</p></div>
+          <div className="rounded-xl bg-white/10 p-3"><p className="font-black">Codex</p><p className="text-xs text-white/65">Feature prompts and ship plans.</p></div>
+          <div className="rounded-xl bg-white/10 p-3"><p className="font-black">Business</p><p className="text-xs text-white/65">Money, content, products, learning.</p></div>
+          <div className="rounded-xl bg-white/10 p-3"><p className="font-black">Launch</p><p className="text-xs text-white/65">Lint, build, commit, push.</p></div>
+        </div>
+
+        <div className="mt-5 max-h-[420px] space-y-3 overflow-auto rounded-2xl bg-white/10 p-4">{messages.map((message, index) => <p key={`${message}-${index}`} className="whitespace-pre-line rounded-xl bg-white/10 p-3 text-sm">{message}</p>)}</div>
+        <div className="mt-4 grid gap-2 md:grid-cols-[1fr_auto]"><Input className="bg-white text-black" value={prompt} onChange={(event) => setPrompt(event.target.value)} placeholder="Ask Zu for code help, a Codex prompt, money plan, mindset reset, or content..." /><Button onClick={() => ask(prompt)} className="bg-amber-300 text-black"><Sparkles /> Ask Zu</Button></div>
+        <div className="mt-4 flex flex-wrap gap-2">{prompts.map((item) => <Button key={item} onClick={() => ask(item)} className="bg-pink-500 text-white">{item}</Button>)}</div>
+      </Card>
+
+      <div className="grid gap-5 xl:grid-cols-[1fr_.9fr]">
+        <Card className="rounded-2xl bg-white/85 p-5 shadow-xl">
+          <h3 className="text-2xl font-black">Codex Prompt Builder</h3>
+          <p className="mt-1 text-sm text-zinc-600">Tell Zu what you want built. She turns it into a clean Codex-ready prompt with tests and push instructions.</p>
+          <textarea className={`${textareaClass} mt-4`} value={codexGoal} onChange={(event) => setCodexGoal(event.target.value)} />
+          <div className="mt-3 flex flex-wrap gap-2">
+            <Button onClick={generatePrompt} className="bg-black text-white"><Sparkles /> Generate Codex Prompt</Button>
+            <Button onClick={() => navigator.clipboard?.writeText(codexPrompt)} variant="outline">Copy prompt</Button>
+          </div>
+          <pre className="mt-4 max-h-80 overflow-auto whitespace-pre-wrap rounded-2xl bg-zinc-950 p-4 text-xs text-white">{codexPrompt}</pre>
+        </Card>
+
+        <Card className="rounded-2xl bg-white/85 p-5 shadow-xl">
+          <h3 className="text-2xl font-black">Ship Checklist</h3>
+          <div className="mt-4 space-y-3">
+            {[
+              "Clarify the feature in one sentence.",
+              "Ask Codex to inspect files before editing.",
+              "Implement the smallest complete version.",
+              "Run npm run lint.",
+              "Run npm run build.",
+              "Commit with a clear message.",
+              "Push to main.",
+              "Check Vercel is READY.",
+            ].map((item) => <div key={item} className="rounded-xl border border-amber-200 bg-cream/80 p-3 text-sm font-semibold">{item}</div>)}
+          </div>
+          <div className="mt-4 rounded-2xl bg-black p-4 text-white">
+            <p className="font-black">Zu&apos;s tone</p>
+            <p className="mt-1 text-sm text-white/75">Warm when you are overwhelmed. Direct when you are procrastinating. Fun when you need energy. Serious when it is time to ship.</p>
+          </div>
+        </Card>
+      </div>
+    </div>
+  );
 }
 
 function SettingsPage({ settings, setSettings, reset, exportData }: { settings: ReturnType<typeof useSettings>[0]; setSettings: (value: ReturnType<typeof useSettings>[0]) => void; reset: () => void; exportData: () => void }) {

@@ -670,6 +670,10 @@ function ZuPage({ businesses, setBusinesses, tasks, setTasks, content, setConten
   const [brain, setBrain] = useState<ZuBrain>("Zu");
   const [codexGoal, setCodexGoal] = useState("Add a new feature to help me make progress faster.");
   const [codexPrompt, setCodexPrompt] = useState(buildCodexPrompt("Add a new feature to help me make progress faster."));
+  const [codexLink, setCodexLink] = useState(() => {
+    if (typeof window === "undefined") return "";
+    return window.localStorage.getItem("boss-hq-codex-link") ?? "";
+  });
   const prompts = ["Plan my day", "Give me 5 content ideas", "Make me a caption", "What should I focus on today?", "Give me a low energy plan", "Give me a high hustle plan", "Help me make money today", "Write a Codex prompt", "Help me commit and push"];
   function ask(value: string) {
     if (!value.trim()) return;
@@ -723,6 +727,19 @@ function ZuPage({ businesses, setBusinesses, tasks, setTasks, content, setConten
   function generatePrompt() {
     setCodexPrompt(buildCodexPrompt(codexGoal));
   }
+  function saveCodexLink() {
+    window.localStorage.setItem("boss-hq-codex-link", codexLink);
+    setMessages((current) => [...current, "Zu: Codex link saved. Now I can open your coding workspace from here."]);
+  }
+  function openCodexLink() {
+    navigator.clipboard?.writeText(codexPrompt);
+    if (codexLink.trim()) {
+      window.open(codexLink, "_blank", "noopener,noreferrer");
+      setMessages((current) => [...current, "Zu: Copied the Codex prompt and opened your Codex link. Go paste it and let us ship."]);
+    } else {
+      setMessages((current) => [...current, "Zu: Add your Codex link first, then I can open it and copy the prompt for you."]);
+    }
+  }
   return (
     <div className="space-y-5">
       <Card className="rounded-2xl bg-black p-5 text-white shadow-2xl">
@@ -771,6 +788,15 @@ function ZuPage({ businesses, setBusinesses, tasks, setTasks, content, setConten
         <Card className="rounded-2xl bg-white/85 p-5 shadow-xl">
           <h3 className="text-2xl font-black">Codex Prompt Builder</h3>
           <p className="mt-1 text-sm text-zinc-600">Tell Zu what you want built. She turns it into a clean Codex-ready prompt with tests and push instructions.</p>
+          <div className="mt-4 rounded-2xl border border-amber-200 bg-cream/70 p-4">
+            <p className="font-black">Your Codex Link</p>
+            <p className="mt-1 text-sm text-zinc-600">Paste the link you use to open Codex. Zu saves it in this browser and can open it after copying the build prompt.</p>
+            <div className="mt-3 grid gap-2 md:grid-cols-[1fr_auto_auto]">
+              <Input value={codexLink} onChange={(event) => setCodexLink(event.target.value)} placeholder="Paste your Codex link here..." />
+              <Button onClick={saveCodexLink} variant="outline">Save link</Button>
+              <Button onClick={openCodexLink} className="bg-black text-white">Open Codex</Button>
+            </div>
+          </div>
           <textarea className={`${textareaClass} mt-4`} value={codexGoal} onChange={(event) => setCodexGoal(event.target.value)} />
           <div className="mt-3 flex flex-wrap gap-2">
             <Button onClick={generatePrompt} className="bg-black text-white"><Sparkles /> Generate Codex Prompt</Button>

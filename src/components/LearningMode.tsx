@@ -1,5 +1,4 @@
 import { Card } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { LucideBookOpen } from "lucide-react";
 
 export default function LearningMode() {

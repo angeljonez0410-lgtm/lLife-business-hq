@@ -1,5 +1,5 @@
-import TaskManager from "@/components/TaskManager";
+import BossDashboardApp from "@/components/dashboard/BossDashboardApp";
 
 export default function TasksPage() {
-  return <TaskManager />;
+  return <BossDashboardApp view="tasks" />;
 }

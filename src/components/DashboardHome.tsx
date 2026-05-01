@@ -2,7 +2,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { LucideSparkles, LucideCheckCircle, LucideDollarSign, LucideBookOpen, LucideCamera, LucideTrendingUp } from "lucide-react";
-import { starterBusinesses, weeklySchedule, beginnerTasks } from "@/lib/starterData";
+import { weeklySchedule, beginnerTasks } from "@/lib/starterData";
 
 const today = new Date();
 const dayName = today.toLocaleDateString(undefined, { weekday: "long" });

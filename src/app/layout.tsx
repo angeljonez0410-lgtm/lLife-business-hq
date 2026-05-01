@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import MainNav from "@/components/MainNav";
 import { TooltipProvider } from "@/components/ui/tooltip";
 
 const geistSans = Geist({
@@ -15,8 +14,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Life + Business HQ",
-  description: "Your luxury boss CEO dashboard",
+  title: "Boss Life + Business HQ",
+  description: "A luxury local-first dashboard for life, business, content, money, products, learning, and ideas.",
 };
 
 export default function RootLayout({
@@ -32,7 +31,6 @@ export default function RootLayout({
       <body className="min-h-full flex flex-col bg-gradient-to-br from-pink-light via-cream to-gold-light">
         <TooltipProvider>
           {children}
-          <MainNav />
         </TooltipProvider>
       </body>
     </html>

@@ -1,3 +1,5 @@
+import BossDashboardApp from "@/components/dashboard/BossDashboardApp";
+
 export default function SchedulePage() {
-  return <div className="p-6">Weekly Schedule Planner coming soon...</div>;
+  return <BossDashboardApp view="schedule" />;
 }

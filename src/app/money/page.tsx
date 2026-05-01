@@ -1,3 +1,5 @@
+import BossDashboardApp from "@/components/dashboard/BossDashboardApp";
+
 export default function MoneyPage() {
-  return <div className="p-6">Money Tracker coming soon...</div>;
+  return <BossDashboardApp view="money" />;
 }

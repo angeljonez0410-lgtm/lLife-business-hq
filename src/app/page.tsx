@@ -1,6 +1,5 @@
-import Image from "next/image";
-import DashboardHome from "@/components/DashboardHome";
+import BossDashboardApp from "@/components/dashboard/BossDashboardApp";
 
 export default function Home() {
-  return <DashboardHome />;
+  return <BossDashboardApp view="dashboard" />;
 }

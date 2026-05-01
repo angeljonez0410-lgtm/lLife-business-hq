@@ -1,3 +1,5 @@
+import BossDashboardApp from "@/components/dashboard/BossDashboardApp";
+
 export default function LearningPage() {
-  return <div className="p-6">Learning Mode coming soon...</div>;
+  return <BossDashboardApp view="learning" />;
 }

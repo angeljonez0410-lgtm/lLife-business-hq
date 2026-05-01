@@ -1,3 +1,5 @@
+import BossDashboardApp from "@/components/dashboard/BossDashboardApp";
+
 export default function AIPage() {
-  return <div className="p-6">Zu AI Assistant coming soon...</div>;
+  return <BossDashboardApp view="zu" />;
 }

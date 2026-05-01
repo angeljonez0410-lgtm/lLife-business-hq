@@ -1,14 +1,21 @@
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { LucidePlus, LucideVideo, LucideInstagram, LucideFacebook, LucideYoutube, LucidePinterest } from "lucide-react";
+import {
+  LucideCamera,
+  LucidePin,
+  LucidePlay,
+  LucidePlus,
+  LucideUsers,
+  LucideVideo,
+} from "lucide-react";
 
 const platforms = [
   { name: "TikTok", icon: LucideVideo },
-  { name: "Instagram", icon: LucideInstagram },
-  { name: "Facebook", icon: LucideFacebook },
-  { name: "YouTube Shorts", icon: LucideYoutube },
-  { name: "Pinterest", icon: LucidePinterest },
+  { name: "Instagram", icon: LucideCamera },
+  { name: "Facebook", icon: LucideUsers },
+  { name: "YouTube Shorts", icon: LucidePlay },
+  { name: "Pinterest", icon: LucidePin },
 ];
 
 export default function ContentPlanner() {

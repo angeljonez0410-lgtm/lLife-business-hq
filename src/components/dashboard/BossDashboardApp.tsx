@@ -66,6 +66,7 @@ const badgeColors: Record<string, string> = {
 
 const selectClass = "h-9 w-full rounded-lg border border-amber-200 bg-white/70 px-3 text-sm outline-none focus:ring-2 focus:ring-pink-300";
 const textareaClass = "min-h-20 w-full rounded-lg border border-amber-200 bg-white/70 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-pink-300";
+const projectStages: Business["stage"][] = ["Idea", "Learning", "Building", "Testing", "Selling", "Scaling"];
 
 function makeId(prefix: string) {
   return `${prefix}-${Date.now()}-${Math.random().toString(16).slice(2)}`;
@@ -80,6 +81,14 @@ function groupCount(items: { business: string }[]) {
     name: business.name.replace(" / Retail Arbitrage", ""),
     value: items.filter((item) => item.business === business.name).length,
   }));
+}
+
+function businessStage(business: Business) {
+  return business.stage ?? (business.status === "Research" ? "Idea" : business.status === "Active" ? "Selling" : business.status as Business["stage"]) ?? "Building";
+}
+
+function businessField(field: string | undefined, fallback: string) {
+  return field?.trim() ? field : fallback;
 }
 
 const aiHooks = [
@@ -324,6 +333,29 @@ function Dashboard({ businesses, tasks, content, products, income, expenses, com
         <Card className="rounded-2xl bg-white/75 p-5 shadow-lg lg:col-span-2"><h3 className="font-black">Weekly Progress</h3><Progress value={Math.min(100, completed * 8)} className="mt-4 h-3" /><p className="mt-2 text-sm text-zinc-600">{Math.min(100, completed * 8)}% of this week&apos;s movement complete.</p></Card>
         <Card className="rounded-2xl bg-white/75 p-5 shadow-lg"><h3 className="font-black">Money Goal</h3><Progress value={Math.min(100, income / 25)} className="mt-4 h-3" /><p className="mt-2 text-sm text-zinc-600">${income - expenses} profit tracked.</p></Card>
       </div>
+      <Card className="rounded-2xl bg-white/80 p-5 shadow-xl">
+        <div className="mb-4 flex items-center justify-between gap-3">
+          <div>
+            <h3 className="text-xl font-black">Project Progress Snapshot</h3>
+            <p className="text-sm text-zinc-600">A quick list of where every project stands right now.</p>
+          </div>
+          <Link href="/businesses" className="rounded-lg bg-black px-3 py-2 text-sm font-bold text-white">Edit progress</Link>
+        </div>
+        <div className="grid gap-3 md:grid-cols-2">
+          {businesses.map((business) => (
+            <div key={business.id} className="rounded-xl border border-amber-200 bg-white/70 p-3">
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <p className="font-black">{business.name}</p>
+                  <p className="text-xs text-zinc-600">{businessStage(business)} - {businessField(business.currentFocus, business.mainGoal)}</p>
+                </div>
+                <span className="text-sm font-black">{business.progress}%</span>
+              </div>
+              <Progress value={business.progress} className="mt-2 h-2" />
+            </div>
+          ))}
+        </div>
+      </Card>
       <div className="grid gap-4 xl:grid-cols-3">
         <ChartCard title="Monthly income"><ResponsiveContainer width="100%" height={220}><AreaChart data={chartData}><XAxis dataKey="name" /><YAxis /><Tooltip /><Area type="monotone" dataKey="income" stroke="#db2777" fill="#f9a8d4" /></AreaChart></ResponsiveContainer></ChartCard>
         <ChartCard title="Content by platform"><ResponsiveContainer width="100%" height={220}><PieChart><Pie data={["TikTok", "Instagram", "Facebook", "YouTube Shorts", "Pinterest"].map((name) => ({ name, value: content.filter((c) => c.platform === name).length }))} dataKey="value" nameKey="name" outerRadius={80}>{["#db2777", "#facc15", "#111827", "#fb7185", "#f59e0b"].map((color) => <Cell key={color} fill={color} />)}</Pie><Tooltip /></PieChart></ResponsiveContainer></ChartCard>
@@ -359,7 +391,77 @@ function TodayPage({ tasks, onComplete, onAddTask }: { tasks: Task[]; onComplete
 function BusinessHub({ businesses, setBusinesses }: { businesses: Business[]; setBusinesses: (value: Business[]) => void }) {
   const [active, setActive] = useState(businesses[0]?.id ?? "");
   const business = businesses.find((item) => item.id === active) ?? businesses[0];
-  return <div className="space-y-5"><div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">{businesses.map((item) => <button key={item.id} onClick={() => setActive(item.id)} className="text-left"><BusinessCard business={item} /></button>)}</div>{business && <Card className="rounded-2xl bg-white/80 p-5 shadow-xl"><div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between"><h3 className="text-2xl font-black">{business.name}</h3><Button onClick={() => setBusinesses(businesses.map((item) => item.id === business.id ? { ...item, progress: Math.min(100, item.progress + 5) } : item))}>Open Business</Button></div><div className="mt-4 grid gap-3 md:grid-cols-7">{["Overview", "Tasks", "Learning Path", "Content Ideas", "Products", "Money", "Notes"].map((tab) => <div key={tab} className="rounded-xl border border-amber-200 bg-white/70 p-3 text-sm font-bold">{tab}</div>)}</div><p className="mt-4 text-zinc-700">Main goal: {business.mainGoal}. Next task: {business.nextTask}.</p></Card>}</div>;
+  function updateBusiness(id: string, changes: Partial<Business>) {
+    setBusinesses(businesses.map((item) => item.id === id ? { ...item, ...changes, lastUpdated: new Date().toISOString().slice(0, 10) } : item));
+  }
+  const averageProgress = businesses.length ? Math.round(businesses.reduce((sum, item) => sum + item.progress, 0) / businesses.length) : 0;
+  return (
+    <div className="space-y-5">
+      <Card className="rounded-2xl bg-black p-5 text-white shadow-2xl">
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+          <div>
+            <Badge className="mb-2 bg-pink-500 text-white">Project Progress Tracker</Badge>
+            <h2 className="text-2xl font-black">Where I&apos;m At With Every Project</h2>
+            <p className="text-sm text-white/70">Use this list to track stage, progress, focus, blockers, next step, and notes for each business.</p>
+          </div>
+          <div className="min-w-48 rounded-2xl bg-white/10 p-4">
+            <p className="text-sm text-white/70">Overall progress</p>
+            <p className="text-3xl font-black">{averageProgress}%</p>
+            <Progress value={averageProgress} className="mt-2 h-2" />
+          </div>
+        </div>
+      </Card>
+
+      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">{businesses.map((item) => <button key={item.id} onClick={() => setActive(item.id)} className="text-left"><BusinessCard business={item} /></button>)}</div>
+
+      <Card className="rounded-2xl bg-white/80 p-5 shadow-xl">
+        <h3 className="mb-4 text-xl font-black">Progress List</h3>
+        <div className="space-y-3">
+          {businesses.map((item) => (
+            <button key={item.id} onClick={() => setActive(item.id)} className={`w-full rounded-2xl border p-4 text-left transition ${item.id === business?.id ? "border-pink-400 bg-pink-50" : "border-white/70 bg-white/65 hover:bg-white"}`}>
+              <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+                <div className="min-w-0">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <h4 className="font-black">{item.name}</h4>
+                    <Badge className="bg-black text-white">{businessStage(item)}</Badge>
+                    <Badge className="bg-amber-300 text-black">{item.moneyPotential}</Badge>
+                  </div>
+                  <p className="mt-1 text-sm text-zinc-600">Where I&apos;m at: {businessField(item.currentFocus, item.mainGoal)}</p>
+                  <p className="text-sm text-zinc-600">Next: {item.nextTask}</p>
+                </div>
+                <div className="w-full lg:w-56">
+                  <div className="mb-1 flex justify-between text-xs font-bold"><span>{item.progress}%</span><span>{businessField(item.lastUpdated, "not updated")}</span></div>
+                  <Progress value={item.progress} className="h-2" />
+                </div>
+              </div>
+            </button>
+          ))}
+        </div>
+      </Card>
+
+      {business && <Card className="rounded-2xl bg-white/85 p-5 shadow-xl">
+        <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+          <div>
+            <h3 className="text-2xl font-black">{business.name}</h3>
+            <p className="text-sm text-zinc-600">Edit this project&apos;s exact progress and where you are right now.</p>
+          </div>
+          <Button onClick={() => updateBusiness(business.id, { progress: Math.min(100, business.progress + 5) })}>+5% Progress</Button>
+        </div>
+
+        <div className="mt-5 grid gap-3 md:grid-cols-2">
+          <label className="space-y-1 text-sm font-bold">Stage<Select value={businessStage(business)} onChange={(stage) => updateBusiness(business.id, { stage: stage as Business["stage"], status: stage })} options={projectStages} /></label>
+          <label className="space-y-1 text-sm font-bold">Progress %<Input type="number" min={0} max={100} value={business.progress} onChange={(event) => updateBusiness(business.id, { progress: Math.max(0, Math.min(100, Number(event.target.value))) })} /></label>
+          <label className="space-y-1 text-sm font-bold">Main Goal<Input value={business.mainGoal} onChange={(event) => updateBusiness(business.id, { mainGoal: event.target.value })} /></label>
+          <label className="space-y-1 text-sm font-bold">Next Step<Input value={business.nextTask} onChange={(event) => updateBusiness(business.id, { nextTask: event.target.value })} /></label>
+          <label className="space-y-1 text-sm font-bold">Where I&apos;m At Right Now<Input value={businessField(business.currentFocus, "")} onChange={(event) => updateBusiness(business.id, { currentFocus: event.target.value })} placeholder="Example: testing prices, learning basics, building website..." /></label>
+          <label className="space-y-1 text-sm font-bold">Blocker / Stuck Point<Input value={businessField(business.blocker, "")} onChange={(event) => updateBusiness(business.id, { blocker: event.target.value })} placeholder="What is slowing this down?" /></label>
+          <label className="space-y-1 text-sm font-bold md:col-span-2">Project Notes<textarea className={textareaClass} value={businessField(business.notes, "")} onChange={(event) => updateBusiness(business.id, { notes: event.target.value })} placeholder="Write what you tried, what worked, what to remember..." /></label>
+        </div>
+
+        <div className="mt-4 grid gap-3 md:grid-cols-7">{["Overview", "Tasks", "Learning Path", "Content Ideas", "Products", "Money", "Notes"].map((tab) => <div key={tab} className="rounded-xl border border-amber-200 bg-white/70 p-3 text-sm font-bold">{tab}</div>)}</div>
+      </Card>}
+    </div>
+  );
 }
 
 function BusinessCard({ business }: { business: Business }) {

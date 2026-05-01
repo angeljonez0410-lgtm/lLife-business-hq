@@ -8,9 +8,14 @@ export type Business = {
   icon: string;
   color: string;
   status: string;
+  stage: "Idea" | "Learning" | "Building" | "Testing" | "Selling" | "Scaling";
   mainGoal: string;
   nextTask: string;
   progress: number;
+  currentFocus: string;
+  blocker: string;
+  lastUpdated: string;
+  notes: string;
   moneyPotential: "Fast Cash" | "Long Term" | "Build Slowly";
 };
 

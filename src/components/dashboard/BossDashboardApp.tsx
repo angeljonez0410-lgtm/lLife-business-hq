@@ -674,6 +674,14 @@ function ZuPage({ businesses, setBusinesses, tasks, setTasks, content, setConten
     if (typeof window === "undefined") return "";
     return window.localStorage.getItem("boss-hq-codex-link") ?? "";
   });
+  const [githubLink, setGithubLink] = useState(() => {
+    if (typeof window === "undefined") return "https://github.com/angeljonez0410-lgtm/lLife-business-hq";
+    return window.localStorage.getItem("boss-hq-github-link") ?? "https://github.com/angeljonez0410-lgtm/lLife-business-hq";
+  });
+  const [siteLink, setSiteLink] = useState(() => {
+    if (typeof window === "undefined") return "https://l-life-business-hq.vercel.app";
+    return window.localStorage.getItem("boss-hq-site-link") ?? "https://l-life-business-hq.vercel.app";
+  });
   const prompts = ["Plan my day", "Give me 5 content ideas", "Make me a caption", "What should I focus on today?", "Give me a low energy plan", "Give me a high hustle plan", "Help me make money today", "Write a Codex prompt", "Help me commit and push"];
   function ask(value: string) {
     if (!value.trim()) return;
@@ -727,9 +735,11 @@ function ZuPage({ businesses, setBusinesses, tasks, setTasks, content, setConten
   function generatePrompt() {
     setCodexPrompt(buildCodexPrompt(codexGoal));
   }
-  function saveCodexLink() {
+  function saveCodeLinks() {
     window.localStorage.setItem("boss-hq-codex-link", codexLink);
-    setMessages((current) => [...current, "Zu: Codex link saved. Now I can open your coding workspace from here."]);
+    window.localStorage.setItem("boss-hq-github-link", githubLink);
+    window.localStorage.setItem("boss-hq-site-link", siteLink);
+    setMessages((current) => [...current, "Zu: Code links saved. Codex, GitHub, and live site are connected from this dashboard."]);
   }
   function openCodexLink() {
     navigator.clipboard?.writeText(codexPrompt);
@@ -739,6 +749,19 @@ function ZuPage({ businesses, setBusinesses, tasks, setTasks, content, setConten
     } else {
       setMessages((current) => [...current, "Zu: Add your Codex link first, then I can open it and copy the prompt for you."]);
     }
+  }
+  function openGithubIssue() {
+    const repo = githubLink.trim().replace(/\/$/, "");
+    const title = encodeURIComponent(codexGoal || "Boss HQ bug or upgrade");
+    const body = encodeURIComponent(codexPrompt);
+    if (repo) window.open(`${repo}/issues/new?title=${title}&body=${body}`, "_blank", "noopener,noreferrer");
+    navigator.clipboard?.writeText(codexPrompt);
+    setMessages((current) => [...current, "Zu: Copied the build brief and opened GitHub issue creation. Paste, submit, and we have a tracked work ticket."]);
+  }
+  function copyGitCommands() {
+    const commands = "npm run lint\nnpm run build\ngit status --short\ngit add src package.json package-lock.json\ngit commit -m \"Describe the upgrade\"\ngit push origin main";
+    navigator.clipboard?.writeText(commands);
+    setMessages((current) => [...current, "Zu: Copied the safe ship commands. Run them through Codex or terminal after the code is ready."]);
   }
   return (
     <div className="space-y-5">
@@ -789,12 +812,19 @@ function ZuPage({ businesses, setBusinesses, tasks, setTasks, content, setConten
           <h3 className="text-2xl font-black">Codex Prompt Builder</h3>
           <p className="mt-1 text-sm text-zinc-600">Tell Zu what you want built. She turns it into a clean Codex-ready prompt with tests and push instructions.</p>
           <div className="mt-4 rounded-2xl border border-amber-200 bg-cream/70 p-4">
-            <p className="font-black">Your Codex Link</p>
-            <p className="mt-1 text-sm text-zinc-600">Paste the link you use to open Codex. Zu saves it in this browser and can open it after copying the build prompt.</p>
-            <div className="mt-3 grid gap-2 md:grid-cols-[1fr_auto_auto]">
+            <p className="font-black">Code Link Hub</p>
+            <p className="mt-1 text-sm text-zinc-600">Save your Codex, GitHub, and live site links. Zu can open the right place, copy the build prompt, create a GitHub issue draft, and hand you safe ship commands.</p>
+            <div className="mt-3 grid gap-3">
               <Input value={codexLink} onChange={(event) => setCodexLink(event.target.value)} placeholder="Paste your Codex link here..." />
-              <Button onClick={saveCodexLink} variant="outline">Save link</Button>
+              <Input value={githubLink} onChange={(event) => setGithubLink(event.target.value)} placeholder="GitHub repo link..." />
+              <Input value={siteLink} onChange={(event) => setSiteLink(event.target.value)} placeholder="Live Vercel site link..." />
+            </div>
+            <div className="mt-3 grid gap-2 sm:grid-cols-2 xl:grid-cols-5">
+              <Button onClick={saveCodeLinks} variant="outline">Save links</Button>
               <Button onClick={openCodexLink} className="bg-black text-white">Open Codex</Button>
+              <Button onClick={openGithubIssue} className="bg-pink-500 text-white">GitHub issue</Button>
+              <Button onClick={() => siteLink.trim() && window.open(siteLink.trim(), "_blank", "noopener,noreferrer")} variant="outline">Open site</Button>
+              <Button onClick={copyGitCommands} variant="outline">Copy ship commands</Button>
             </div>
           </div>
           <textarea className={`${textareaClass} mt-4`} value={codexGoal} onChange={(event) => setCodexGoal(event.target.value)} />

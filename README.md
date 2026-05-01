@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Life + Business HQ
 
 A bold, girly, luxury “boss CEO” dashboard web app to organize your life, schedule, learning, tasks, content, products, money, and all your businesses.
@@ -39,3 +40,6 @@ A bold, girly, luxury “boss CEO” dashboard web app to organize your life, sc
 ---
 
 See `.github/copilot-instructions.md` for project workflow and setup steps.
+=======
+# lLife-business-hq
+>>>>>>> c0a68527f35eac29bb8ba70e12d50b2b40eba745

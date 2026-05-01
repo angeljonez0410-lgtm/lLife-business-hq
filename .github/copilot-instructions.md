@@ -1,0 +1,8 @@
+- [x] Scaffold the Project
+  - Next.js app created with TypeScript, Tailwind CSS, ESLint, App Router, src directory, import alias, and npm.
+- [ ] Customize the Project
+- [ ] Install Required Extensions
+- [ ] Compile the Project
+- [ ] Create and Run Task
+- [ ] Launch the Project
+- [ ] Ensure Documentation is Complete

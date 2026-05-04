@@ -54,7 +54,7 @@
 :root {
   --background: #FFF9F3;
   --foreground: #18181B;
-  --card: rgba(255,255,255,0.7);
+  --card: rgba(255,255,255,0.85);
   --card-foreground: #18181B;
   --popover: #FFF9F3;
   --popover-foreground: #18181B;
@@ -75,10 +75,72 @@
   --chart-3: #FFF9F3;
   --chart-4: #C2185B;
   --chart-5: #18181B;
-  --radius: 1.25rem;
+  --radius: 1.5rem;
   --sidebar: #FFF7D6;
   --sidebar-foreground: #18181B;
-  --sidebar-primary: #FF69B4;
+}
+
+html {
+  font-size: 18px;
+  font-family: var(--font-sans), 'Inter', 'Geist', 'Segoe UI', Arial, sans-serif;
+  background: linear-gradient(135deg, #fff9f3 0%, #ffd6ec 100%);
+  min-height: 100%;
+}
+
+body {
+  background: linear-gradient(120deg, #fff9f3 0%, #ffe4e6 50%, #fff7d6 100%);
+  min-height: 100vh;
+  color: var(--foreground);
+  font-size: 1.1rem;
+  font-family: var(--font-sans), 'Inter', 'Geist', 'Segoe UI', Arial, sans-serif;
+  letter-spacing: 0.01em;
+}
+
+/* Glassmorphism card style */
+.bg-glass {
+  background: rgba(255,255,255,0.85);
+  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.10);
+  backdrop-filter: blur(18px) saturate(1.2);
+  border: 1.5px solid var(--border);
+}
+
+/* Luxury gradient badge */
+.bg-gradient-pink-gold {
+  background: linear-gradient(90deg, #ff69b4 0%, #ffd700 100%);
+}
+
+/* Custom scrollbar */
+.scrollbar-thin {
+  scrollbar-width: thin;
+  scrollbar-color: #db2777 #fff9f3;
+}
+.scrollbar-thin::-webkit-scrollbar {
+  width: 8px;
+  background: #fff9f3;
+}
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background: linear-gradient(120deg, #ff69b4 0%, #ffd700 100%);
+  border-radius: 8px;
+}
+.scrollbar-thin::-webkit-scrollbar-track {
+  background: #fff9f3;
+}
+
+/* Bolder headings */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-heading), 'Geist', 'Inter', 'Segoe UI', Arial, sans-serif;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+}
+
+/* Pink selection highlight */
+
+::selection {
+  background: #ffd6ec;
+  color: #db2777;
+}
+
+:root {
   --sidebar-primary-foreground: #FFF9F3;
   --sidebar-accent: #FFD700;
   --sidebar-accent-foreground: #FF69B4;
@@ -89,7 +151,6 @@
   --gradient-pink-gold: linear-gradient(135deg, #FFD6EC 0%, #FFD700 100%);
   --gradient-black-cream: linear-gradient(135deg, #18181B 0%, #FFF9F3 100%);
 }
-
 .dark {
   --background: #18181B;
   --foreground: #FFF9F3;

@@ -2,14 +2,28 @@ import { Card } from "@/components/ui/card";
 import { LucideSettings } from "lucide-react";
 
 export default function AdminSettings() {
+  // Clear all localStorage and reload the page
+  const handleClearAllData = () => {
+    if (window.confirm('Are you sure you want to clear ALL your data? This cannot be undone.')) {
+      window.localStorage.clear();
+      window.location.replace(window.location.href);
+    }
+  };
+
   return (
-    <div className="max-w-2xl mx-auto px-4 py-8 space-y-6">
-      <div className="flex items-center gap-2 mb-4">
-        <LucideSettings className="text-black w-8 h-8" />
-        <h2 className="text-2xl font-bold text-black">Admin / Settings</h2>
+    <div className="max-w-4xl mx-auto px-2 sm:px-4 py-6 sm:py-12 space-y-6 sm:space-y-10">
+      <div className="flex items-center gap-2 sm:gap-4 mb-4 sm:mb-8">
+        <LucideSettings className="text-black w-8 sm:w-12 h-8 sm:h-12 drop-shadow" />
+        <h2 className="text-2xl sm:text-4xl font-extrabold text-black drop-shadow-lg tracking-tight">Admin / Settings</h2>
+        <button
+          className="bg-destructive text-white rounded-full px-4 py-2 font-bold shadow-glass hover:bg-destructive/80 transition ml-4"
+          onClick={handleClearAllData}
+        >
+          Clear All Data
+        </button>
       </div>
-      <Card className="p-4 rounded-3xl shadow-glass border-gold bg-glass backdrop-blur-xl">
-        <div className="text-sm text-muted-foreground">Profile, theme, onboarding, and more coming soon...</div>
+      <Card className="p-4 sm:p-8 rounded-4xl shadow-glass border-2 border-gold bg-glass backdrop-blur-2xl hover:scale-[1.01] transition-transform">
+        <div className="text-sm sm:text-lg text-muted-foreground font-semibold">Profile, theme, onboarding, and more coming soon...</div>
       </Card>
     </div>
   );
